@@ -45,7 +45,6 @@ void rng(int* arr, int n) {
 int* generateFlag(int* arr, int n, int idx) {
   int* flag = (int*) malloc(n * sizeof(int));
 
-  #pragma omp parallel for num_threads(THREAD_COUNT)
   for (int i = 0; i < n; i++) {
     if ((arr[i] >> idx) & 1 == 1) {
       flag[i] = 1;
@@ -89,7 +88,6 @@ int* generateIUp(int* flag, int n) {
 int* generateShouldIndex(int* flag, int* iDown, int* iUp, int n) {
   int* shouldIndex = (int*) malloc(n * sizeof(int));
 
-  #pragma omp parallel for num_threads(THREAD_COUNT)
   for (int i = 0; i < n; i++) {
     if (flag[i] == 0) {
       shouldIndex[i] = iDown[i];
@@ -106,12 +104,10 @@ void permute(int* arr, int* flag, int* iDown, int* iUp, int n) {
 
   int* shouldIndex = generateShouldIndex(flag, iDown, iUp, n);
 
-  #pragma omp parallel for num_threads(THREAD_COUNT)
   for (int i = 0; i < n; i++) {
     shouldArr[shouldIndex[i]] = arr[i];
   }
 
-  #pragma omp parallel for num_threads(THREAD_COUNT)
   for (int i = 0; i < n; i++) {
     arr[i] = shouldArr[i];
   }
@@ -134,7 +130,7 @@ void radixSort(int* arr, int n) {
   }
 }
 
-// Main Program 
+// Main Program
 int main(int argc, char** argv) {
   int n;
 
