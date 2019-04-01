@@ -144,12 +144,8 @@ int main(int argc, char** argv) {
 
 
   int * arr = (int*) malloc(n * sizeof(int));
-  int * c_arr = (int*) malloc(n * sizeof(int));
 
   rng(arr, n);
-  rng(c_arr, n);
-  printArrei(arr, n);
-  printArrei(c_arr, n);
 
   clock_t beginTime = clock();
   radixSort(arr, n);
@@ -158,8 +154,7 @@ int main(int argc, char** argv) {
   double elapsedTime = (double) endTime - beginTime / CLOCKS_PER_SEC;
 
   cout << "Parallel Radix Sort Time: " << elapsedTime << endl;
-  serialRadixSort(c_arr, n);
 
-  printArr(arr, n);
+  printArrei(arr, n);
   cout << endl;
 }
