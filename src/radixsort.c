@@ -1,10 +1,10 @@
-#include <algorithm>
-#include <iostream>
-#include <iterator>
-#include <ctime>
-#include <fstream>
-
-using namespace std;
+// #include <algorithm>
+// #include <iterator>
+// #include <ctime>
+// #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define THREAD_COUNT 4
 
@@ -19,16 +19,19 @@ int getMaxElement(int *arr, int n) {
 }
 
 void printArr(int* arr, int n) {
-  ofstream fstream;
-  fstream.open("data/output");
+  FILE * fstream;
+  fstream = fopen("data/output","w");
+
   for (int i = 0; i < n; i++) {
-    fstream << arr[i] << endl;
+    fprintf(fstream, "%d", arr[i]);
   }
+
+  fclose(fstream);
 }
 
 void printArrei(int* arr, int n) {
   for (int i = 0; i < n; i++) {
-    cout << arr[i] << endl;
+    printf("%d\n", arr[i]);
   }
 }
 
@@ -135,11 +138,11 @@ int main(int argc, char** argv) {
   int n;
 
   if (argc != 2){
-    cout << "Wrong input" << endl;
-    cout << "./radix_sort <N>" << endl;
+    printf("Wrong input\n");
+    printf("./radix_sort <N>\n");
     exit(0);
   } else {
-    n = stoi(argv[1]);
+    n = (int) strtol(argv[1], (char**)NULL, 10);
   }
 
 
@@ -153,8 +156,7 @@ int main(int argc, char** argv) {
 
   double elapsedTime = (double) endTime - beginTime / CLOCKS_PER_SEC;
 
-  cout << "Parallel Radix Sort Time: " << elapsedTime << endl;
+  printf("Parallel Radix Sort Time: %ld\n", elapsedTime);
 
   printArrei(arr, n);
-  cout << endl;
 }
