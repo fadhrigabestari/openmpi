@@ -6,6 +6,17 @@
 #include <mpi.h>
 #include <assert.h>
 
+void printToFile(int* arr, int n) {
+  FILE * fstream;
+  fstream = fopen("data/output","w");
+
+  for (int i = 0; i < n; i++) {
+    fprintf(fstream, "%d", arr[i]);
+  }
+
+  fclose(fstream);
+}
+
 void rng(int* arr, int n) {
   int seed = 13516154;
   srand(seed);
@@ -22,10 +33,10 @@ int main(int argc, char** argv) {
 
   rng(arr, n_element);
   struct timespec start, end;
-  
+
   // start time
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-  
+
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
@@ -38,7 +49,7 @@ int main(int argc, char** argv) {
   //     printf("%d\n", arr[i]);
   //   }
   // }
-  
+
   for (int idx = 0; idx < 32; idx++) {
     /* GENERATE FLAGS */
     int* flags = NULL;
@@ -188,6 +199,7 @@ int main(int argc, char** argv) {
       }
       // printf("\n");
     }
+    
     // /* FINISH PERMUTE */
     // /* FREE MALLOCS */
     free(flags);
@@ -196,18 +208,19 @@ int main(int argc, char** argv) {
     free(should_index);
     }
     // MPI_Bcast(arr, n_element, MPI_INT, 0, MPI_COMM_WORLD);
-  
+
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
   u_int64_t delta_us = ((end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000) / 1000;
-  
+
   if (id == 0) {
     printf("elapsed time: %lu\n", delta_us);
     printf("finished array:\n");
     for (int i = 0; i < n_element; i++) {
       printf("%d\n", arr[i]);
     }
+    printToFile(arr, n_element);
   }
 }
