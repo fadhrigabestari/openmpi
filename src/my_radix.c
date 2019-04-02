@@ -6,12 +6,13 @@
 #include <mpi.h>
 #include <assert.h>
 
-void printToFile(int* arr, int n) {
+void printToFile(int* arr, int n, double elapsed_time) {
   FILE * fstream;
-  fstream = fopen("data/output","w");
+  fstream = fopen("../out/output","w");
 
+  fprintf(fstream, "elapsed time: %f\n", elapsed_time);
   for (int i = 0; i < n; i++) {
-    fprintf(fstream, "%d", arr[i]);
+    fprintf(fstream, "%d\n", arr[i]);
   }
 
   fclose(fstream);
@@ -32,10 +33,10 @@ int main(int argc, char** argv) {
   int* arr = (int*) malloc(n_element * sizeof(int));
 
   rng(arr, n_element);
-  struct timespec start, end;
+  double start, end;
 
   // start time
-  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+  start = MPI_Wtime();
 
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
@@ -211,16 +212,12 @@ int main(int argc, char** argv) {
 
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
-  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+  end = MPI_Wtime();
 
-  u_int64_t delta_us = ((end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000) / 1000;
+  double elapsed_time = (end - start) * 1000000;
 
   if (id == 0) {
-    printf("elapsed time: %lu\n", delta_us);
-    printf("finished array:\n");
-    for (int i = 0; i < n_element; i++) {
-      printf("%d\n", arr[i]);
-    }
-    printToFile(arr, n_element);
+    printf("elapsed time: %f\n", elapsed_time);
+    printToFile(arr, n_element, elapsed_time);
   }
 }
