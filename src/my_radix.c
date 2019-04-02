@@ -21,18 +21,23 @@ int main(int argc, char** argv) {
   int* arr = (int*) malloc(n_element * sizeof(int));
 
   rng(arr, n_element);
+  struct timespec start, end;
+  
+  // start time
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
   
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
-  int n_element_per = comm_size;
+  int n_element_per = n_element / comm_size;
 
   // print initial array
-  if (id == 0) {
-    for (int i = 0; i < n_element; i++) {
-      printf("arr: %d\n", arr[i]);
-    }
-  }
+  // if (id == 0) {
+  //   printf("initial array:\n");
+  //   for (int i = 0; i < n_element; i++) {
+  //     printf("%d\n", arr[i]);
+  //   }
+  // }
   
   for (int idx = 0; idx < 32; idx++) {
     /* GENERATE FLAGS */
@@ -154,6 +159,7 @@ int main(int argc, char** argv) {
       } else {
         local_should_index[i] = local_i_up[i];
       }
+      // printf("\nlocal_should_index %d: %d\n", i, local_should_index[i]);
     }
 
     MPI_Gather(local_should_index, n_element_per, MPI_INT, should_index, n_element_per, MPI_INT, 0,
@@ -193,10 +199,15 @@ int main(int argc, char** argv) {
   
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
+  u_int64_t delta_us = ((end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000) / 1000;
+  
   if (id == 0) {
+    printf("elapsed time: %lu\n", delta_us);
+    printf("finished array:\n");
     for (int i = 0; i < n_element; i++) {
-      printf("finish array: %d\n", arr[i]);
+      printf("%d\n", arr[i]);
     }
   }
 }
