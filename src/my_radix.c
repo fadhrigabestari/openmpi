@@ -5,15 +5,6 @@
 #include <time.h>
 #include <mpi.h>
 #include <assert.h>
-float *create_rand_nums(int num_elements) {
-  float *rand_nums = (float *)malloc(sizeof(float) * num_elements);
-  assert(rand_nums != NULL);
-  int i;
-  for (i = 0; i < num_elements; i++) {
-    rand_nums[i] = (rand() / (float)RAND_MAX);
-  }
-  return rand_nums;
-}
 
 void rng(int* arr, int n) {
   int seed = 13516154;
@@ -23,61 +14,11 @@ void rng(int* arr, int n) {
   }
 }
 
-float compute_avg(float *array, int num_elements) {
-  float sum = 0.f;
-  int i;
-  for (i = 0; i < num_elements; i++) {
-    sum += array[i];
-  }
-  return sum / num_elements;
-}
-
-int* generate_flags(int* arr, int n_element, int n_element_per, int idx, int id, int comm_size) {
-  int* flags = NULL;
-
-  if (id == 0) {
-    flags = (int*) malloc(n_element * sizeof(int));
-    assert(flags != NULL);
-  }
-
-  int *local_arr = (int*) malloc(n_element_per * sizeof(int));
-  assert(local_arr != NULL);
-
-  MPI_Scatter(arr, n_element_per, MPI_INT, local_arr,
-    n_element_per, MPI_INT, 0, MPI_COMM_WORLD);
-
-  int* local_flags = (int*) malloc(n_element_per * sizeof(int));
-  assert(local_flags != NULL);
-
-  for (int i = 0; i < n_element_per; i++) {
-    if ((local_arr[i] >> idx) & 1 == 1) {
-      local_flags[i] = 1;
-    } else {
-      local_flags[i] = 0;
-    }
-  }
-
-  MPI_Gather(&local_flags, n_element_per, MPI_INT, flags, n_element, MPI_INT, 0,
-  MPI_COMM_WORLD);
-
-  if (id == 0) {
-    for (int i = 0; i < n_element; i++) {
-      printf("%d\n", flags[i]);
-    }
-  }
-
-  free(local_arr);
-  free(local_flags);
-
-  if (id == 0) {
-    return flags;
-  }
-}
-
 int main(int argc, char** argv) {
   int n_element = atoi(argv[1]);
-  int* arr = (int*) malloc(n_element * sizeof(int));
+  int arrlel[9] = {22, 21, 11, 39, 99, 3230, 323, 110, 32123};
   int id, comm_size;
+  int* arr = (int*) malloc(n_element * sizeof(int));
 
   rng(arr, n_element);
   
@@ -93,7 +34,7 @@ int main(int argc, char** argv) {
     }
   }
   
-  for (int idx = 0; idx < n_element; idx++) {
+  for (int idx = 0; idx < 32; idx++) {
     /* GENERATE FLAGS */
     int* flags = NULL;
 
@@ -102,7 +43,7 @@ int main(int argc, char** argv) {
       assert(flags != NULL);
     }
 
-    int *local_arr = (int*) malloc(n_element_per * sizeof(int));
+    int* local_arr = (int*) malloc(n_element_per * sizeof(int));
     assert(local_arr != NULL);
 
     MPI_Scatter(arr, n_element_per, MPI_INT, local_arr,
@@ -112,6 +53,7 @@ int main(int argc, char** argv) {
     assert(local_flags != NULL);
 
     for (int i = 0; i < n_element_per; i++) {
+      // printf("local arr %d: %d", i, local_arr[i]);
       if ((local_arr[i] >> idx) & 1 == 1) {
         local_flags[i] = 1;
       } else {
@@ -121,10 +63,18 @@ int main(int argc, char** argv) {
 
     MPI_Gather(local_flags, n_element_per, MPI_INT, flags, n_element_per, MPI_INT, 0,
     MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
 
     free(local_arr);
     free(local_flags);
     /* FINISH GENERATING FLAGS */
+
+    if (id == 0) {
+      for (int i = 0; i < n_element; i++) {
+        // printf("flag %d %d", i, flags[i]);
+      }
+
+    }
 
     /* GENERATE INDEX DOWN */
     int* i_down = NULL;
@@ -140,9 +90,14 @@ int main(int argc, char** argv) {
         }
         i_down[i] = val;
       }
+      for (int i = 0; i < n_element; i++) {
+        // printf("i down %d", i_down[i]);
+      }
+      // printf("\n");
     }
+    /* FINISH GENERATING INDEX DOWN */
 
-    /* GENERATE INDEX UP */
+    // /* GENERATE INDEX UP */
     int* i_up = NULL;
     if (id == 0) {
       i_up = (int*) malloc(n_element * sizeof(int));
@@ -156,12 +111,92 @@ int main(int argc, char** argv) {
         }
         i_up[i] = val;
       }
+      for (int i = 0; i < n_element; i++) {
+        // printf("i up %d", i_up[i]);
+      }
+      // printf("\n");
     }
-    /* FREE MALLOCS */
+    // /* FINISH GENERATING INDEX UP */
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // /* GENERATE SHOULD INDEX */
+    int* should_index = NULL;
+
+    if (id == 0) {
+      should_index = (int*) malloc(n_element * sizeof(int));
+      assert(should_index != NULL);
+    }
+
+    local_flags = (int*) malloc(n_element_per * sizeof(int));
+    assert(local_flags != NULL);
+
+    int* local_i_down = (int*) malloc(n_element_per * sizeof(int));
+    assert(local_i_down != NULL);
+
+    int* local_i_up = (int*) malloc(n_element_per * sizeof(int));
+    assert(local_i_up != NULL);
+
+    MPI_Scatter(flags, n_element_per, MPI_INT, local_flags,
+      n_element_per, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Scatter(i_down, n_element_per, MPI_INT, local_i_down,
+      n_element_per, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Scatter(i_up, n_element_per, MPI_INT, local_i_up,
+      n_element_per, MPI_INT, 0, MPI_COMM_WORLD);
+
+    int* local_should_index = (int*) malloc(n_element_per * sizeof(int));
+    assert(local_should_index != NULL);
+
+    for (int i = 0; i < n_element_per; i++) {
+      if (local_flags[i] == 0) {
+        local_should_index[i] = local_i_down[i];
+      } else {
+        local_should_index[i] = local_i_up[i];
+      }
+    }
+
+    MPI_Gather(local_should_index, n_element_per, MPI_INT, should_index, n_element_per, MPI_INT, 0,
+    MPI_COMM_WORLD);
+
+    free(local_flags);
+    free(local_should_index);
+    free(local_i_down);
+    free(local_i_up);
+    // /* FINISH GENERATING SHOULD INDEX */
+
+    // /* PERMUTE */
+    int* should_arr = NULL;
+
+    if (id == 0) {
+      should_arr = (int*) malloc(n_element * sizeof(int));
+      assert(should_arr);
+      for (int i = 0; i < n_element; i++) {
+        // printf("should index: %d\n", should_index[i]);
+        should_arr[should_index[i]] = arr[i];
+      }
+
+      for (int i = 0; i < n_element; i++) {
+        arr[i] = should_arr[i];
+        // printf("progress: %d\n", arr[i]);
+      }
+      // printf("\n");
+    }
+    // /* FINISH PERMUTE */
+    // /* FREE MALLOCS */
     free(flags);
     free(i_down);
-  }
+    free(i_up);
+    free(should_index);
+    }
+    // MPI_Bcast(arr, n_element, MPI_INT, 0, MPI_COMM_WORLD);
   
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
+
+  if (id == 0) {
+    for (int i = 0; i < n_element; i++) {
+      printf("finish array: %d\n", arr[i]);
+    }
+  }
 }

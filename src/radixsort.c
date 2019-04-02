@@ -58,6 +58,8 @@ int* generateFlag(int* arr, int n, int idx) {
   return flag;
 }
 
+
+
 // create I-down array
 int* generateIDown(int* flag, int n) {
   int* iDown = (int*) malloc(n * sizeof(int));
