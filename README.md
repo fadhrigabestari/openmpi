@@ -4,10 +4,10 @@ Dibuat oleh :
  - M. Fadhriga Bestari - 13516154
 
 ## Petunjuk Penggunaan Program
-1. Open your terminal from directory that possess this file
-2. Type 'make' in your terminal to compile this program
-3. Type this in your shell
+Run this in your terminal or on the server
 ```
+cd openmpi/src
+make
 mpirun -np 4 radix_sort {n element array}
 ```
 
@@ -33,35 +33,35 @@ Menurut kami, penerapan MPI pada radix sort dapat mempercepat sort karena dengan
 ### Jumlah *Thread* yang Digunakan
 Jumlah *thread* yang kami gunakan adalah 4 karena sesuai dengan core yang dialokasikan pada Virtual Machine yang kami gunakan untuk menjalankan program.
 ### Pengukuran Kinerja
-1. N = 5000
+> N = 5000
 <br>
-Radix Sort serial : 30378
+Radix Sort serial : 14803
 <br>
-Radix Sort Paralel dengan OpenMPI : 226287
+Radix Sort Paralel dengan OpenMPI : 156699
 
-2. N = 50.000
+> N = 50.000
 <br>
-Radix Sort serial : 284117
+Radix Sort serial : 116493
 <br>
-Radix Sort Paralel dengan OpenMPI : 384187
+Radix Sort Paralel dengan OpenMPI : 248837
 
-3. N = 100.000
+> N = 100.000
 <br>
-Radix Sort serial : 551722
+Radix Sort serial : 232686
 <br>
-Radix Sort Paralel dengan OpenMPI : 620323
+Radix Sort Paralel dengan OpenMPI : 330071
 
-4. N = 200.000
+> N = 200.000
 <br>
-Radix Sort serial : 1083420
+Radix Sort serial : 483184
 <br>
-Radix Sort Paralel dengan OpenMPI : 1113662
+Radix Sort Paralel dengan OpenMPI : 535068
 
-5. N = 400.000
+> N = 400.000
 <br>
-Radix Sort serial : 2158944
+Radix Sort serial : 929879
 <br>
-Radix Sort Paralel dengan OpenMPI : **2053767**
+Radix Sort Paralel dengan OpenMPI : 957559
 
 ### Analisis Perbandingan Kinerja Serial dan Paralel
-Berdasarkan percobaan dan perbandingan yang telah kami lakukan, didapatkan bahwa program paralel yang kami gunakan MPI_Scatter dan MPI_Gather membutuhkan waktu tambahan yaitu waktu untuk melakukan pembagian dan pengumpulan data dari ke empat task yang kami assign. Sehingga program paralel yang kami buat, akan lebih lambat pada n yang relatif kecil. Tetapi dapat dilihat bahwa pada n = 400.000, program paralel radix sort yang kami buat, memproses radix sort lebih cepat.
+Berdasarkan percobaan dan perbandingan yang telah kami lakukan, didapatkan bahwa program paralel yang kami gunakan MPI_Scatter dan MPI_Gather membutuhkan waktu tambahan yaitu waktu untuk melakukan pembagian dan pengumpulan data dari ke empat task yang kami assign. Sehingga program paralel yang kami buat, akan lebih lambat pada n yang relatif kecil. Tetapi pada percobaan dengan n = 1.000.000, program paralel radix sort yang kami buat, memproses radix sort lebih cepat.
