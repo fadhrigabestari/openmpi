@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
       }
       // printf("\n");
     }
-    
+
     // /* FINISH PERMUTE */
     // /* FREE MALLOCS */
     free(flags);
